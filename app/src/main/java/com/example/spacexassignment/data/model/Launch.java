@@ -1,15 +1,17 @@
 package com.example.spacexassignment.data.model;
 
+import androidx.annotation.Nullable;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
 import java.util.List;
+
 import com.google.gson.annotations.SerializedName;
 
 import org.jetbrains.annotations.NotNull;
 
 @Entity(tableName = "launch")
-public class Launch{
+public class Launch {
 
     @PrimaryKey
     @NotNull
@@ -302,5 +304,18 @@ public class Launch{
 
     public void setFlightNumber(int flightNumber) {
         this.flightNumber = flightNumber;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (obj == null || obj == this) {
+            return true;
+        }
+        if (!(obj instanceof Launch)) {
+            return false;
+        }
+
+        Launch launch = (Launch) obj;
+        return Integer.compare(flightNumber, launch.flightNumber) == 0;
     }
 }

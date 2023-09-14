@@ -1,13 +1,11 @@
 package com.example.spacexassignment.di;
 
-import android.app.Application;
 import android.content.Context;
-
-import androidx.room.Room;
 
 import com.example.spacexassignment.data.database.FavoriteDao;
 import com.example.spacexassignment.data.database.LaunchAppDatabase;
 import com.example.spacexassignment.data.database.LaunchDao;
+import com.example.spacexassignment.util.AppExecuter;
 
 import javax.inject.Singleton;
 
@@ -20,7 +18,7 @@ public class DatabaseModule {
     @Provides
     @Singleton
     LaunchAppDatabase provideLaunchAppDatabase(Context context) {
-        return Room.databaseBuilder(context, LaunchAppDatabase.class,"launch_database").build();
+        return LaunchAppDatabase.getDatabase(context);
     }
 
     @Provides
@@ -32,5 +30,4 @@ public class DatabaseModule {
     FavoriteDao providesFavoritesDao(LaunchAppDatabase appDatabase) {
         return appDatabase.favoriteDao();
     }
-
 }

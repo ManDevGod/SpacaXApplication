@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import com.example.spacexassignment.R;
 import com.example.spacexassignment.SpaceXApplication;
 import com.example.spacexassignment.data.model.Launch;
+import com.example.spacexassignment.databinding.FragmentListLaunchBinding;
 import com.example.spacexassignment.ui.adapter.LaunchListAdapter;
 import com.example.spacexassignment.vm.LaunchViewModel;
 import com.example.spacexassignment.vm.LaunchViewModelFactory;
@@ -33,14 +34,24 @@ public class ListLaunchFragment extends Fragment {
     public LaunchViewModelFactory launchViewModelFactory;
     private LaunchViewModel launchViewModel;
     private LaunchListAdapter launchListAdapter;
+
     LaunchListAdapter.LaunchItemCLickListener launchItemCLickListener = new LaunchListAdapter.LaunchItemCLickListener() {
         @Override
         public void onLaunchItemClick(Launch launchItem) {
             launchViewModel.setSelectedLaunch(launchItem);
             NavHostFragment.findNavController(ListLaunchFragment.this).navigate(R.id.action_listLaunchFragment_to_detailLaunchFragment);
         }
+
+        @Override
+        public void setFavoriteItemClick(Launch launchItem, boolean alreadyAdded) {
+            if (alreadyAdded) {
+                launchViewModel.deleteFavorite(launchItem);
+            } else {
+                launchViewModel.setFavorite(launchItem);
+            }
+        }
     };
-    private RecyclerView recyclerView;
+    private FragmentListLaunchBinding binding;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,27 +65,18 @@ public class ListLaunchFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_list_launch, container, false);
-        recyclerView = view.findViewById(R.id.rv_launch_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding = FragmentListLaunchBinding.inflate(getLayoutInflater(), container, false);
+        binding.rvLaunchList.setLayoutManager(new LinearLayoutManager(getContext()));
         launchListAdapter = new LaunchListAdapter(getContext(), launchItemCLickListener);
-        recyclerView.setAdapter(launchListAdapter);
+        binding.rvLaunchList.setAdapter(launchListAdapter);
         launchViewModel.getLaunches().observe(getViewLifecycleOwner(), launchItems -> {
             launchListAdapter.updateLaunchesList(launchItems);
         });
 
-        return view;
-    }
+        launchViewModel.getAllFavoriteLaunches().observe(getViewLifecycleOwner(), launches -> {
+            launchListAdapter.updateFavoriteList(launches);
+        });
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        Timber.i("OnResume");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Timber.i("onStop");
+        return binding.getRoot();
     }
 }

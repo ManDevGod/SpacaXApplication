@@ -25,8 +25,15 @@ public class LaunchViewModel extends ViewModel {
     }
 
     public void setSelectedLaunch(Launch launch) {
-        repository.setFavoriteLaunch(launch);
         selectedLaunch.setValue(launch);
+    }
+
+    public void setFavorite(Launch launch) {
+        repository.setFavoriteLaunch(launch);
+    }
+
+    public void deleteFavorite(Launch launch) {
+        repository.setFavoriteLaunch(launch);
     }
 
     public LiveData<Launch> getSelectedLaunch() {
@@ -35,10 +42,6 @@ public class LaunchViewModel extends ViewModel {
 
     public LiveData<List<Launch>> getLaunches() {
         return repository.getLaunches();
-    }
-
-    public LiveData<List<FavoriteLaunch>> getFavoriteLaunches() {
-        return repository.getFavoriteLaunches();
     }
 
     public LiveData<List<Launch>> getAllFavoriteLaunches() {

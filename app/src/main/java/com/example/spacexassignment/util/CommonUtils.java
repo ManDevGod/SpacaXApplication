@@ -3,7 +3,13 @@ package com.example.spacexassignment.util;
 import com.example.spacexassignment.data.model.Launch;
 import com.example.spacexassignment.data.model.LaunchItem;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 public class CommonUtils {
@@ -35,6 +41,48 @@ public class CommonUtils {
             launch.setUpcoming(launchItem.isUpcoming());
             return launch;
         }).collect(Collectors.toList());
+    }
+
+    public static String convertUTCDateTimeToNormal(String utcDateTime) {
+        String time = "";
+        if (utcDateTime != null) {
+            SimpleDateFormat utcFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+            utcFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date utcDate = null;
+            try {
+                utcDate = utcFormatter.parse(utcDateTime);
+            } catch (ParseException parseException) {
+                parseException.printStackTrace();
+            }
+            SimpleDateFormat localFormatter = new SimpleDateFormat("dd MMMM yyyy", Locale.US);
+            localFormatter.setTimeZone(TimeZone.getDefault());
+            if (utcDate != null) {
+                time = localFormatter.format(utcDate.getTime());
+            }
+        }
+        return time;
+    }
+
+    public static boolean isActive(String dateTime) {
+        Calendar currentTime = Calendar.getInstance();
+
+        Calendar specificDateTime = Calendar.getInstance();
+
+        SimpleDateFormat utcFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US);
+        utcFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date utcDate = null;
+        try {
+            utcDate = utcFormatter.parse(dateTime);
+        } catch (ParseException parseException) {
+            parseException.printStackTrace();
+        }
+        if (utcDate != null) {
+            specificDateTime.setTime(utcDate);
+            if (currentTime.compareTo(specificDateTime) < 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

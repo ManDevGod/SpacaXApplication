@@ -6,10 +6,10 @@ import com.example.spacexassignment.di.AppComponent;
 import com.example.spacexassignment.di.DaggerAppComponent;
 
 import timber.log.Timber;
+
 import static timber.log.Timber.DebugTree;
 
 public class SpaceXApplication extends Application {
-
     public AppComponent appComponent;
 
     @Override
@@ -20,6 +20,4 @@ public class SpaceXApplication extends Application {
         }
         appComponent = DaggerAppComponent.factory().create(this);
     }
-
-
 }

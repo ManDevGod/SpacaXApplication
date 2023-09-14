@@ -15,6 +15,7 @@ import com.example.spacexassignment.R;
 import com.example.spacexassignment.SpaceXApplication;
 import com.example.spacexassignment.data.model.Launch;
 import com.example.spacexassignment.databinding.FragmentDetailLaunchBinding;
+import com.example.spacexassignment.util.CommonUtils;
 import com.example.spacexassignment.vm.LaunchViewModel;
 import com.example.spacexassignment.vm.LaunchViewModelFactory;
 
@@ -46,14 +47,7 @@ public class DetailLaunchFragment extends Fragment {
             Timber.i("Launch name :%s", launch.getMissionName());
             showDetails(launch);
         });
-        
-        launchViewModel.getFavoriteLaunches().observe(getViewLifecycleOwner(), favoriteLaunches -> {
-            Timber.i("Size of Favorites %s", favoriteLaunches.size());
-        });
 
-        launchViewModel.getAllFavoriteLaunches().observe(getViewLifecycleOwner(), launches -> {
-            Timber.i("Size of All Favorites %s", launches.size());
-        });
 
         return fragmentDetailLaunchBinding.getRoot();
     }
@@ -65,9 +59,10 @@ public class DetailLaunchFragment extends Fragment {
                 .placeholder(R.drawable.spacex_placeholder)
                 .into(fragmentDetailLaunchBinding.ivLaunchImage);
         fragmentDetailLaunchBinding.tvMissionName.setText(launch.getMissionName());
-        fragmentDetailLaunchBinding.tvLaunchDate.setText(launch.getLaunchDateSource());
         fragmentDetailLaunchBinding.tvRocketName.setText(launch.getRocketName());
         fragmentDetailLaunchBinding.tvRocketType.setText(launch.getRocketType());
+        fragmentDetailLaunchBinding.tvLaunchDate.setText(CommonUtils.convertUTCDateTimeToNormal(launch.getLaunchDateUtc()));
+        fragmentDetailLaunchBinding.tvMissionDescription.setText(launch.getDetails() != null ? launch.getDetails().trim() : "No description is available.");
 
     }
 }

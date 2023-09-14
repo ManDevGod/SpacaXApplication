@@ -1,6 +1,7 @@
 package com.example.spacexassignment.repository;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.example.spacexassignment.data.database.FavoriteDao;
 import com.example.spacexassignment.data.database.LaunchDao;
@@ -8,6 +9,7 @@ import com.example.spacexassignment.data.model.FavoriteLaunch;
 import com.example.spacexassignment.data.model.Launch;
 import com.example.spacexassignment.data.model.LaunchItem;
 import com.example.spacexassignment.data.network.SpacexApiService;
+import com.example.spacexassignment.util.AppExecuter;
 import com.example.spacexassignment.util.CommonUtils;
 
 import java.util.List;
@@ -23,14 +25,20 @@ public class LaunchRepository {
 
     private SpacexApiService apiService;
     private LaunchDao launchDao;
-
+    private AppExecuter executer;
     private FavoriteDao favoriteDao;
 
+    private LiveData<List<Launch>> launchLiveData;
+
+    private MutableLiveData<List<Launch>> favoriteLaunchLiveData = new MutableLiveData<>();
+
+
     @Inject
-    public LaunchRepository(SpacexApiService apiService, LaunchDao launchDao, FavoriteDao favoriteDao) {
+    public LaunchRepository(SpacexApiService apiService, LaunchDao launchDao, FavoriteDao favoriteDao, AppExecuter executer) {
         this.apiService = apiService;
         this.launchDao = launchDao;
         this.favoriteDao = favoriteDao;
+        this.executer = executer;
     }
 
     public LiveData<List<Launch>> getLaunches() {
@@ -38,8 +46,14 @@ public class LaunchRepository {
         return launchDao.getAll();
     }
 
+    /*
+    Not using this now
+     */
     public LiveData<List<FavoriteLaunch>> getFavoriteLaunches() {
-        return favoriteDao.getAllFavorites();
+        executer.getExecutor().execute(() -> {
+            favoriteDao.getAllFavorites();
+        });
+        return null;
     }
 
     public LiveData<List<Launch>> getAllFavoriteLauches() {
@@ -47,28 +61,33 @@ public class LaunchRepository {
     }
 
     public void setFavoriteLaunch(Launch launch) {
-        new Thread(() -> {
+        executer.getExecutor().execute(() -> {
             FavoriteLaunch favoriteLaunch = new FavoriteLaunch();
             favoriteLaunch.setFavoriteFlightNumber(launch.getFlightNumber());
             favoriteDao.insert(favoriteLaunch);
-        }).start();
+        });
+    }
+
+    public void deleteFavoriteLaunch(Launch launch) {
+        executer.getExecutor().execute(() -> {
+            FavoriteLaunch favoriteLaunch = new FavoriteLaunch();
+            favoriteLaunch.setFavoriteFlightNumber(launch.getFlightNumber());
+            favoriteDao.delete(favoriteLaunch);
+        });
     }
 
     public void refreshData() {
         apiService.getLaunches().enqueue(new Callback<List<LaunchItem>>() {
             @Override
             public void onResponse(Call<List<LaunchItem>> call, Response<List<LaunchItem>> response) {
-                if (response != null && response.isSuccessful()) {
-                    Timber.tag("Network Response").d("Response Successful");
+                if (response.body() != null && response.isSuccessful()) {
                     Timber.i("Response is %s", response.body().size());
-                    Timber.i("THread name %s", Thread.currentThread().getName());
-                    new Thread(() -> {
+                    executer.getExecutor().execute(() -> {
                         launchDao.insetAll(CommonUtils.mapLaunchItemToLaunch(response.body()));
-                    }).start();
+                    });
                 } else {
                     Timber.tag("Network Response").d("Response failed");
                 }
-
             }
 
             @Override
